@@ -1,6 +1,7 @@
 from room import Room
 from player import Player
 from world import World
+from util import Queue
 
 import random
 
@@ -21,7 +22,81 @@ player = Player("Name", world.startingRoom)
 
 
 # FILL THIS IN
-traversalPath = ['n', 's']
+traversalPath = []
+visited = set()
+
+# def nearest_unvisited_room(currentRoom):
+#     q = Queue()
+#     q.enqueue([currentRoom])
+#     while q.size() > 0:
+#        path = q.dequeue()
+#        room = currentRoom
+#        for direction in path:
+#            room = room.getRoomInDirection(direction)
+
+
+# REMOVE COMMENTS FOR ORIGINAL SOLUTION
+
+# Function to remove opposite direction, preventing reversing direction in pathfinding
+def remove_dir(arr, dir):
+    if dir == 'w':
+        arr.remove('e')
+    elif dir == 'e':
+        arr.remove('w')
+    elif dir == 's':
+        arr.remove('n')
+    elif dir == 'n':
+        arr.remove('s')
+    return arr
+
+# Function to find nearest unvisted dead-end
+def nearest_unvisited_dead_end(currentRoom):
+    q = Queue()
+    # Get exits, add to queue
+    for exit in currentRoom.getExits():
+        # new_route = [exit]
+        q.enqueue([exit])
+    while q.size() > 0:
+        # dequeue exit
+        path = q.dequeue()
+        room = currentRoom
+        for direction in path:
+            room = room.getRoomInDirection(direction)
+        # if exit is an unvisted dead-end
+        if room.id not in visited and len(room.getExits()) == 1:
+            # return exit
+            return path
+        # If path is longer than 4 moves, find nearest unvisted room
+        elif len(path) > 9 and room.id not in visited:
+            return path
+        # If room is not a visited dead-end
+        elif len(room.getExits()) != 1:
+            new_exits = remove_dir(room.getExits(), path[-1])
+            for exit in new_exits:
+                new_path = path.copy()
+                new_path.append(exit)
+                q.enqueue(new_path)
+        # else get exits and queue each except back to previous room
+        # else:
+        #     new_exits = remove_dir(room.getExits(), path[-1])
+        #     for exit in new_exits:
+        #         new_path = path.copy()
+        #         new_path.append(exit)
+        #         q.enqueue(new_path)
+
+    # while q.size() > 0:
+    #     route = q.dequeue()
+    #     currentRoom = route[-1]
+    #     for exit
+
+
+while len(visited) < len(roomGraph):
+    dead_end_path = nearest_unvisited_dead_end(player.currentRoom)
+    for direction in dead_end_path:
+        traversalPath.append(direction)
+        player.travel(direction)
+        room = player.currentRoom
+        visited.add(room.id)
 
 
 # TRAVERSAL TEST
